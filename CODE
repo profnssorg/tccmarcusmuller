@@ -1,0 +1,17 @@
+# IMPORT
+import pandas as pd
+import Statsmodel.api as sm
+import plotly as py
+
+# Dataset
+dataset = pd.read_csv('ABEV3.SA.csv')
+dataset.head()
+
+#Date manipulation, once the original data is a string value
+dataset['Date'] = pd.to_datetime(dataset['Date'])
+
+#added Variation column
+dataset['Variation'] = dataset['Close'].sub(dataset['Open'])
+
+### COMENTARIO: Verificar o uso do pip plotty para a visualizacao de dados plotados
+

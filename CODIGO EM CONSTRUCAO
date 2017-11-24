@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+#LEITURA
+stock = pd.read_csv("C:/Users/Marcus/M_ABEV3.csv", na_values="NaN")
+bovespa = pd.read_csv("C:/Users/Marcus/M_BVSP.csv", na_values="NaN")
+cambio = pd.read_csv("C:/Users/Marcus/M_DEXBZUS.csv", na_values="NaN")
+
+
+#CONCATENAMOS NA MATRIZ RESULT
+result = pd.concat([stock, bovespa, cambio], axis=1)
+result_1 = result.dropna(axis=0, how='any')
+
+#show result_1
+result_1
+
+y = result_1['Returns']
+X = result_1[['Returns_BVSPA']]
+X = sm.add_constant(X)
+model11 = sm.OLS(y, X).fit()
+model11.summary()
+
+
+#CONCATENAMOS OS DATASET_1 E DATASET_0 NA MATRIZ RESULT
+result = pd.concat([dataset_0, dataset_1], axis=1)
+
+# REALIZAMOS A REGRECAO
+results = smf.ols('Lottery ~ Literacy + np.log(Pop1831)', data=dat).fit()
+
+# OBSERVAMOS OS DADOS
+print(results.summary())

@@ -1,0 +1,23 @@
+# IMPORTAMOS OS PACOTES NECESSARIOS
+import pandas as pd
+import numpy as np
+import plotly as py
+from IPython.display import display
+
+# RREALIZAMOS A LEITURA DOS DADOS
+dataset = pd.read_csv('C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO/INFLATION OECD.csv', index_col=None, na_values=["."])
+
+# ABANDONAMOS AS COLUNAS QUE NAO NOS INTERESSAM
+dataset.drop(["LOCATION", "INDICATOR", "SUBJECT", "MEASURE", "FREQUENCY", "Flag Codes"], axis=1, inplace=True)
+
+#TRANSFORMAMOS A COLUNA DATA EM UMA VARIAVEL DATETIME
+dataset['TIME'] = pd.to_datetime(dataset['TIME'])
+
+#TRANSFORMAMOS A COLUNA DCOILWTICO DE UMA STRING PARA UMA VARIAVEL FLOAT
+dataset['Value'] = pd.to_numeric(dataset['Value'])
+
+#CRIAMOS UM DATASET DO PERIODO T-1 E APLICAMOS O LOG NA COLUNA CLOSE
+dataset_1 = dataset.drop(dataset.index[0])
+dataset_1 = dataset_1.reset_index(drop=True)
+dataset_1["log_1"] = dataset_1["Value"].apply(np.log)
+dataset_1.Value

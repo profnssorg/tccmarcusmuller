@@ -4,30 +4,20 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
 #LEITURA
-stock = pd.read_csv("C:/Users/Marcus/M_ABEV3.csv", na_values="NaN")
-bovespa = pd.read_csv("C:/Users/Marcus/M_BVSP.csv", na_values="NaN")
-cambio = pd.read_csv("C:/Users/Marcus/M_DEXBZUS.csv", na_values="NaN")
-
+stock = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MODIFICADOS/M_ABEV3.csv", na_values="NaN")
+IBOV = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_BVSP.csv", na_values="NaN")
+OILWTI = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_DCOILWTICO.csv", na_values="NaN")
+cambio = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_Dolar-Real.csv", na_values="NaN")
 
 #CONCATENAMOS NA MATRIZ RESULT
-result = pd.concat([stock, bovespa, cambio], axis=1)
+result = pd.concat([stock, IBOV, OILWTI, cambio], axis=1)
+
+#ABANDONAMOS AS LINHAS COM VALORES NULOS
 result_1 = result.dropna(axis=0, how='any')
 
-#show result_1
-result_1
-
-y = result_1['Returns']
-X = result_1[['Returns_BVSPA']]
+#REALIZAMOS A REGRESSAO
+y = result_1['Returns_ABEV3']
+X = result_1[['Returns_BVSP', "Returns_DCOILWTICO", "Returns_Dolar-Real"]]
 X = sm.add_constant(X)
-model11 = sm.OLS(y, X).fit()
-model11.summary()
-
-
-#CONCATENAMOS OS DATASET_1 E DATASET_0 NA MATRIZ RESULT
-result = pd.concat([dataset_0, dataset_1], axis=1)
-
-# REALIZAMOS A REGRECAO
-results = smf.ols('Lottery ~ Literacy + np.log(Pop1831)', data=dat).fit()
-
-# OBSERVAMOS OS DADOS
-print(results.summary())
+results = sm.OLS(y, X).fit()
+results.summary()

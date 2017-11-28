@@ -10,3 +10,8 @@ dataset['Time'] = pd.to_datetime(dataset['Time'])
 dataset = dataset.dropna(axis=0, how='any')
 dataset = dataset.set_index('Time')
 dataset
+
+#transformacao dias meses com dados do ultimo dia do mes
+g = pd.TimeGrouper('Q') 
+avg = dataset.groupby(g).tail()
+avg

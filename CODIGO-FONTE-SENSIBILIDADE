@@ -1,0 +1,38 @@
+# IMPORTAMOS OS PACOTES NECESSARIOS
+import pandas as pd
+import numpy as np
+import plotly as py
+from IPython.display import display
+
+# REALIZAMOS A LEITURA DOS DADOS
+dataset = pd.read_csv('C:/Users/Marcus/Desktop/METADADOS/DEXBZUS.csv', na_values=".")
+
+#TRANSFORMAMOS A COLUNA DATA EM UMA VARIAVEL DATETIME
+dataset['DATE'] = pd.to_datetime(dataset['DATE'])
+
+#TRANSFORMAMOS A COLUNA DCOILWTICO DE UMA STRING PARA UMA VARIAVEL FLOAT
+dataset['DEXBZUS'] = pd.to_numeric(dataset['DEXBZUS'])
+
+#CRIAMOS UM DATASET DO PERIODO T-1 E APLICAMOS O LOG NA COLUNA CLOSE
+dataset_1 = dataset.drop(dataset.index[0])
+dataset_1 = dataset_1.reset_index(drop=True)
+dataset_1["log_1"] = dataset_1["DEXBZUS"].apply(np.log)
+dataset_1.columns = ['Time_DEXBZUS',"DEXBZUS", 'log_1']
+
+#CRIAMOS UM DATASET DO PERIODO T PARA APLICARMOS O LOG
+dataset_0 = dataset
+dataset_0["log_0"] = dataset_0["DEXBZUS"].apply(np.log)
+dataset_0.head()
+
+#CONCATENAMOS OS DATASET_1 E DATASET_0 NA MATRIZ RESULT
+result = pd.concat([dataset_0, dataset_1], axis=1)
+
+#ADICIONAMOS A COLUNA RETURNS A MATRIZ RESULT
+result["Returns_DEXBZUS"] = result["log_1"]-result["log_0"]
+
+# ABANDONAMOS NOVAMENTE AS COLUNAS QUE NAO NOS INTERESSAM
+result.drop(["DATE", "log_0", "log_1", "DEXBZUS"], axis=1, inplace=True)
+
+#CRIAMOS UM NOVO CSV APOS A MANINULACAO DOS DADOS
+result.to_csv('M_DEXBZUS.csv')
+result

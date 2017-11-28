@@ -1,0 +1,23 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+#LEITURA
+stock = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MODIFICADOS/M_ABEV3.csv", na_values="NaN")
+IBOV = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_BVSP.csv", na_values="NaN")
+OILWTI = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_DCOILWTICO.csv", na_values="NaN")
+cambio = pd.read_csv("C:/Users/Marcus/Desktop/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_Dolar-Real.csv", na_values="NaN")
+
+#CONCATENAMOS NA MATRIZ RESULT
+result = pd.concat([stock, IBOV, OILWTI, cambio], axis=1)
+
+#ABANDONAMOS AS LINHAS COM VALORES NULOS
+result_1 = result.dropna(axis=0, how='any')
+
+#REALIZAMOS A REGRESSAO
+y = result_1['Returns_ABEV3']
+X = result_1[['Returns_BVSP', "Returns_DCOILWTICO", "Returns_Dolar-Real"]]
+X = sm.add_constant(X)
+results = sm.OLS(y, X).fit()
+results.summary()

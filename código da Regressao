@@ -1,0 +1,116 @@
+import numpy as np
+import pandas as pd
+from IPython.display import display
+import plotly as py
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+#LEITURA
+stock = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MODIFICADOS/M_ABEV3.csv", na_values="NaN")
+IBOV = pd.read_csv("C:/Users/marcu\Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_BVSP.csv", na_values="NaN")
+OILWTI = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_DCOILWTICO.csv", na_values="NaN")
+cambio = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_Dolar_Real.csv", na_values="NaN")
+#dados ja mensalizados 
+IPCA = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_IPCA.csv", na_values="NaN")
+Vendas = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_VendasTotalIndustria.csv", na_values="NaN")
+Juros = pd.read_csv("C:/Users/marcu/Dropbox/NEW TCC/DADOS MACROECONOMICOS E DE MERCADO MODIFICADOS/M_INT-Rate-Disc-Rate-BR.csv", na_values="NaN")
+      
+#--------------------------rearranjaremos as matrizes de forma que os valores diarios se tornem mensais------------------------------
+# >>> AÇÃO <<<
+# ABANDONAMOS AS COLUNAS QUE NAO NOS INTERESSA
+stock.drop(["Unnamed: 0"], axis=1, inplace=True)
+
+#TRANSFORMAMOS A COLUNA time EM UMA VARIAVEL DATETIME
+stock['Time'] = pd.to_datetime(stock['Time'])
+
+#TRANSFORMAMOS A COLUNA returns DE UMA STRING PARA UMA VARIAVEL FLOAT
+stock['Returns_ABEV3'] = pd.to_numeric(stock['Returns_ABEV3'])
+
+#Indexamos e soltamos as linhas vazias
+stock = stock.dropna(axis=0, how='any')
+stock = stock.set_index('Time')
+
+#transformacao dias em meses com dados do ultimo dia do mes
+stock_M = (stock.groupby(pd.Grouper(freq='M')).last())
+
+#desidexamento dos dados
+stock_M = stock_M.reset_index()
+stock_M
+
+# >>> INDICE DE MERCADO <<<
+# ABANDONAMOS AS COLUNAS QUE NAO NOS INTERESSA
+IBOV.drop(["Unnamed: 0"], axis=1, inplace=True)
+
+#TRANSFORMAMOS A COLUNA time EM UMA VARIAVEL DATETIME
+IBOV['Time'] = pd.to_datetime(IBOV['Time'])
+
+#TRANSFORMAMOS A COLUNA returns DE UMA STRING PARA UMA VARIAVEL FLOAT
+IBOV['Returns_BVSP'] = pd.to_numeric(IBOV['Returns_BVSP'])
+
+#Indexamos e soltamos as linhas vazias
+IBOV = IBOV.dropna(axis=0, how='any')
+IBOV = IBOV.set_index('Time')
+
+#transformacao dias em meses com dados do ultimo dia do mes
+IBOV_M = (IBOV.groupby(pd.Grouper(freq='M')).last())
+
+#desidexamento dos dados
+IBOV_M = IBOV_M.reset_index()
+IBOV_M
+
+# >>> PREÇOS DO PETROLEO WTI <<<
+# ABANDONAMOS AS COLUNAS QUE NAO NOS INTERESSA
+OILWTI.drop(["Unnamed: 0"], axis=1, inplace=True)
+
+#TRANSFORMAMOS A COLUNA time EM UMA VARIAVEL DATETIME
+OILWTI['Time_DCOILWTICO'] = pd.to_datetime(OILWTI['Time_DCOILWTICO'])
+
+#TRANSFORMAMOS A COLUNA returns DE UMA STRING PARA UMA VARIAVEL FLOAT
+OILWTI['Returns_DCOILWTICO'] = pd.to_numeric(OILWTI['Returns_DCOILWTICO'])
+
+#Indexamos e soltamos as linhas vazias
+OILWTI = OILWTI.dropna(axis=0, how='any')
+OILWTI = OILWTI.set_index('Time_DCOILWTICO')
+
+#transformacao dias em meses com dados do ultimo dia do mes
+OILWTI_M = (OILWTI.groupby(pd.Grouper(freq='M')).last())
+
+#desidexamento dos dados
+OILWTI_M = OILWTI_M.reset_index()
+OILWTI_M
+
+# >>> TAXA DE CAMBIO REAL POR DOLAR <<<
+# ABANDONAMOS AS COLUNAS QUE NAO NOS INTERESSA
+cambio.drop(["Unnamed: 0"], axis=1, inplace=True)
+
+#TRANSFORMAMOS A COLUNA time EM UMA VARIAVEL DATETIME
+cambio['TimeDolarReal'] = pd.to_datetime(cambio['TimeDolarReal'])
+
+#TRANSFORMAMOS A COLUNA returns DE UMA STRING PARA UMA VARIAVEL FLOAT
+cambio['ReturnsDolarReal'] = pd.to_numeric(cambio['ReturnsDolarReal'])
+
+#Indexamos e soltamos as linhas vazias
+cambio = cambio.dropna(axis=0, how='any')
+cambio = cambio.set_index('TimeDolarReal')
+
+#transformacao dias em meses com dados do ultimo dia do mes
+cambio_M = (cambio.groupby(pd.Grouper(freq='M')).last())
+
+#desidexamento dos dados
+cambio_M = cambio_M.reset_index()
+cambio_M
+
+#------------------------------------------------------FIM DO REARRANJO--------------------------------------------------------
+
+#CONCATENAMOS NA MATRIZ RESULT
+result = pd.concat([stock_M, IBOV_M, OILWTI_M, cambio_M, IPCA, Vendas, Juros], axis=1)
+
+#ABANDONAMOS AS LINHAS COM VALORES NULOS
+result_1 = result.dropna(axis=0, how='any')
+
+#REALIZAMOS A REGRESSAO
+y = result_1['Returns_ABEV3']
+X = result_1[['Returns_BVSP', "Returns_DCOILWTICO", "ReturnsDolarReal","Returns_IPCA", "Returns_VendasTotalIndustria", "Returns_INTDSRBRM193N"]]
+X = sm.add_constant(X)
+Regression = sm.OLS(y, X).fit()
+Regression.summary()
